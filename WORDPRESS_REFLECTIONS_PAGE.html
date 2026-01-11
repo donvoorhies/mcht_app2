@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!-- 
+WORDPRESS REFLECTIONS PAGE TEMPLATE
+Denne side viser alle gemte refleksioner fra app'en.
+Brug denne template til: https://mcht.voorhies.dk/refleksioner/
+-->
+
+<div class="mcht-reflections-container">
+  
+  <!-- Page Header -->
+  <div class="reflections-header">
+    <h1>Gemte Refleksioner</h1>
+    <p class="reflections-subtitle">Her kan du se alle dine tidligere refleksioner</p>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="reflections-filters">
+    <label for="session-filter">Filtrer efter session:</label>
+    <select id="session-filter" class="filter-select" onchange="filterReflections()">
+      <option value="all">Alle sessioner</option>
+      <option value="1">Velegnethed og Identitet</option>
+      <option value="2">Selvbevidsthed i Praksis</option>
+      <option value="3">Stresshåndtering</option>
+      <option value="4">Empatisk Kommunikation</option>
+      <option value="5">Grænsesætning</option>
+      <option value="6">Selvmedlidenhed</option>
+      <option value="7">Konflikthåndtering</option>
+      <option value="8">Værdibaseret Liv</option>
+      <option value="9">Aktiveringsstyring</option>
+      <option value="10">Accept og Forandring</option>
+    </select>
+  </div>
+
+  <!-- Reflections List -->
+  <div id="reflections-list" class="reflections-list">
+    <!-- Reflections will be loaded here by JavaScript -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <div class="empty-icon">📖</div>
+    <h3>Ingen refleksioner endnu</h3>
+    <p>Gennemfør en session og besvar refleksionsspørgsmålene for at se dem her.</p>
+    <a href="/sessioner/" class="btn btn-primary">Gå til Sessioner</a>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="loading-state">
+    <div class="spinner"></div>
+    <p>Henter refleksioner...</p>
+  </div>
+
+</div>
+
+<!-- REFLECTIONS JAVASCRIPT -->
+<script>
+  let allReflections = [];
+  let currentFilter = 'all';
+
+  /**
+   * Load reflections from app on page load
+   */
+  function loadReflections() {
+    // Request reflections from app
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'GET_REFLECTIONS',
+        payload: {}
+      }));
+    } else {
+      // Fallback: Show sample data for web preview
+      showEmptyState();
+    }
+  }
+
+  /**
+   * Listen for reflections data from app
+   */
+  window.addEventListener('message', function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      
+      if (data.type === 'REFLECTIONS_DATA') {
+        allReflections = data.payload || [];
+        displayReflections(allReflections);
+      }
+    } catch (e) {
+      console.error('Error parsing message:', e);
+    }
+  });
+
+  /**
+   * Display reflections in the list
+   */
+  function displayReflections(reflections) {
+    const container = document.getElementById('reflections-list');
+    const loadingState = document.getElementById('loading-state');
+    const emptyState = document.getElementById('empty-state');
+    
+    loadingState.style.display = 'none';
+    
+    if (!reflections || reflections.length === 0) {
+      showEmptyState();
+      return;
+    }
+    
+    emptyState.style.display = 'none';
+    container.innerHTML = '';
+    
+    // Sort by date (newest first)
+    const sortedReflections = [...reflections].sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    
+    sortedReflections.forEach(reflection => {
+      const card = createReflectionCard(reflection);
+      container.appendChild(card);
+    });
+  }
+
+  /**
+   * Create a reflection card element
+   */
+  function createReflectionCard(reflection) {
+    const card = document.createElement('div');
+    card.className = 'reflection-card';
+    card.setAttribute('data-session-id', reflection.sessionId);
+    
+    // Format date
+    const date = new Date(reflection.createdAt);
+    const formattedDate = date.toLocaleDateString('da-DK', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    // Card header
+    const header = document.createElement('div');
+    header.className = 'reflection-card-header';
+    header.innerHTML = `
+      <h3>${reflection.sessionTitle || 'Ukendt session'}</h3>
+      <span class="reflection-date">${formattedDate}</span>
+    `;
+    card.appendChild(header);
+    
+    // Answers section
+    if (reflection.answers && Object.keys(reflection.answers).length > 0) {
+      const answersDiv = document.createElement('div');
+      answersDiv.className = 'reflection-answers';
+      
+      Object.values(reflection.answers).forEach(answer => {
+        const answerItem = document.createElement('div');
+        answerItem.className = 'answer-item';
+        answerItem.innerHTML = `
+          <strong>${answer.question}</strong>
+          <span class="answer-value">${answer.answer}</span>
+        `;
+        answersDiv.appendChild(answerItem);
+      });
+      
+      card.appendChild(answersDiv);
+    }
+    
+    // Free text section
+    if (reflection.text && reflection.text.trim()) {
+      const textDiv = document.createElement('div');
+      textDiv.className = 'reflection-text';
+      textDiv.innerHTML = `
+        <strong>Personlige refleksioner:</strong>
+        <p>${reflection.text}</p>
+      `;
+      card.appendChild(textDiv);
+    }
+    
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'reflection-actions';
+    actions.innerHTML = `
+      <button class="btn-small btn-delete" onclick="deleteReflection('${reflection.id}')">
+        🗑️ Slet
+      </button>
+    `;
+    card.appendChild(actions);
+    
+    return card;
+  }
+
+  /**
+   * Filter reflections by session
+   */
+  function filterReflections() {
+    const select = document.getElementById('session-filter');
+    currentFilter = select.value;
+    
+    if (currentFilter === 'all') {
+      displayReflections(allReflections);
+    } else {
+      const filtered = allReflections.filter(r => r.sessionId === currentFilter);
+      displayReflections(filtered);
+    }
+  }
+
+  /**
+   * Delete a reflection
+   */
+  function deleteReflection(reflectionId) {
+    if (!confirm('Er du sikker på at du vil slette denne refleksion?')) {
+      return;
+    }
+    
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'DELETE_REFLECTION',
+        payload: { id: reflectionId }
+      }));
+      
+      // Remove from local array and re-display
+      allReflections = allReflections.filter(r => r.id !== reflectionId);
+      filterReflections();
+    }
+  }
+
+  /**
+   * Show empty state
+   */
+  function showEmptyState() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('reflections-list').innerHTML = '';
+    document.getElementById('empty-state').style.display = 'block';
+  }
+
+  /**
+   * Initialize on page load
+   */
+  document.addEventListener('DOMContentLoaded', function() {
+    loadReflections();
+  });
+</script>
+
+<!-- REFLECTIONS STYLING -->
+<style>
+  .mcht-reflections-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .reflections-header {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .reflections-header h1 {
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .reflections-subtitle {
+    color: #666;
+    font-size: 1.1em;
+  }
+
+  .reflections-filters {
+    background: #f5f5f5;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .reflections-filters label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .filter-select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    max-width: 300px;
+  }
+
+  .reflections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .reflection-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+  }
+
+  .reflection-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .reflection-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #007AFF;
+  }
+
+  .reflection-card-header h3 {
+    margin: 0;
+    color: #007AFF;
+    font-size: 1.3em;
+  }
+
+  .reflection-date {
+    color: #666;
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  .reflection-answers {
+    margin-bottom: 15px;
+  }
+
+  .answer-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+  }
+
+  .answer-item strong {
+    display: block;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 0.95em;
+  }
+
+  .answer-value {
+    color: #007AFF;
+    font-weight: 600;
+  }
+
+  .reflection-text {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #f0f8ff;
+    border-left: 4px solid #007AFF;
+    border-radius: 4px;
+  }
+
+  .reflection-text strong {
+    display: block;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .reflection-text p {
+    margin: 0;
+    color: #555;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .reflection-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+
+  .btn-delete {
+    background: #dc3545;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background: #c82333;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+  }
+
+  .empty-state h3 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .empty-state p {
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: #007AFF;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,122,255,0.3);
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 20px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007AFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .loading-state p {
+    color: #666;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .mcht-reflections-container {
+      padding: 15px;
+    }
+
+    .reflections-header h1 {
+      font-size: 1.8em;
+    }
+
+    .reflection-card-header {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .reflection-date {
+      align-self: flex-start;
+    }
+
+    .reflections-filters {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .filter-select {
+      max-width: 100%;
+    }
+  }
+</style>

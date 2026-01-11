@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build and Run on Android Device",
+			"type": "shell",
+			"command": "cd android && ./gradlew assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk && adb shell am start -n com.mchtapp/.MainActivity",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build and Install with New Icon",
+			"type": "shell",
+			"command": "cd android && ./gradlew assembleDebug && adb uninstall com.mchtapp && adb install app/build/outputs/apk/debug/app-debug.apk && adb shell am start -n com.mchtapp/.MainActivity",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

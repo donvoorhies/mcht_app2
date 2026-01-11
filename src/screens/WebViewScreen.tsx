@@ -1,33 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useCallback, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { BASE_URL, WEB_APP_URL } from '../config';
+import { ALLOWED_DOMAINS, BASE_URL, WEB_APP_URL } from '../config';
+import type { IncomingMessage, OutgoingMessage, Reflection, SessionInfo } from '../types/webview';
+import { getInjectedJavaScript } from '../utils/webViewInjection';
 
 const REFLECTIONS_KEY = 'mcht_reflections_v1';
-
-interface Reflection {
-  id: string;
-  sessionId: string;
-  text: string;
-  createdAt: string;
-}
-
-type IncomingMessage =
-  | { type: 'SAVE_REFLECTION'; payload: Reflection }
-  | { type: 'GET_REFLECTIONS'; payload: { sessionId?: string } }
-  | { type: 'DELETE_REFLECTION'; payload: { id: string } }
-  | { type: 'CLEAR_ALL'; payload?: any };
-
-type OutgoingMessage =
-  | { type: 'SAVE_OK'; payload: { id: string } }
-  | { type: 'REFLECTIONS'; payload: { items: Reflection[] } }
-  | { type: 'DELETE_OK'; payload: { id: string } }
-  | { type: 'CLEAR_OK'; payload?: any }
-  | { type: 'ERROR'; payload: { code: string; message: string } };
+const LAST_SESSION_KEY = 'mcht_last_session';
 
 export default function WebViewScreen() {
+  const route = useRoute<any>();
   const webViewRef = useRef<WebView>(null);
+  
+  // Get initial URL from navigation params or use default
+  const initialUrl = route.params?.initialUrl 
+    ? (route.params.initialUrl.startsWith('http') 
+        ? route.params.initialUrl 
+        : `${BASE_URL}${route.params.initialUrl}`)
+    : WEB_APP_URL;
+
+  // Platform-specific injected JavaScript
+  const injectedJavaScript = useMemo(
+    () => getInjectedJavaScript(Platform.OS as 'ios' | 'android'),
+    []
+  );
 
   const sendMessage = useCallback((message: OutgoingMessage) => {
     webViewRef.current?.postMessage(JSON.stringify(message));
@@ -109,6 +107,44 @@ export default function WebViewScreen() {
     }
   }, [sendMessage]);
 
+  const handleSessionStarted = useCallback(
+    async (sessionData: { id: string; title: string; url?: string }) => {
+      try {
+        const sessionInfo: SessionInfo = {
+          id: sessionData.id,
+          title: sessionData.title,
+          url: sessionData.url || '',
+          timestamp: new Date().toISOString(),
+        };
+        
+        await AsyncStorage.setItem(LAST_SESSION_KEY, JSON.stringify(sessionInfo));
+        sendMessage({ type: 'SESSION_SAVED' });
+      } catch (error) {
+        console.error('Error saving session:', error);
+        sendMessage({
+          type: 'ERROR',
+          payload: { code: 'SESSION_ERROR', message: 'Failed to save session' },
+        });
+      }
+    },
+    [sendMessage]
+  );
+
+  const handleGetLastSession = useCallback(async () => {
+    try {
+      const raw = await AsyncStorage.getItem(LAST_SESSION_KEY);
+      const sessionInfo: SessionInfo | null = raw ? JSON.parse(raw) : null;
+      
+      sendMessage({ type: 'LAST_SESSION', payload: sessionInfo });
+    } catch (error) {
+      console.error('Error getting last session:', error);
+      sendMessage({
+        type: 'ERROR',
+        payload: { code: 'GET_SESSION_ERROR', message: 'Failed to retrieve last session' },
+      });
+    }
+  }, [sendMessage]);
+
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
       try {
@@ -127,6 +163,12 @@ export default function WebViewScreen() {
           case 'CLEAR_ALL':
             handleClearAll();
             break;
+          case 'SESSION_STARTED':
+            handleSessionStarted(message.payload);
+            break;
+          case 'GET_LAST_SESSION':
+            handleGetLastSession();
+            break;
           default:
             console.warn('Unknown message type:', (message as any).type);
         }
@@ -138,27 +180,94 @@ export default function WebViewScreen() {
         });
       }
     },
-    [handleSaveReflection, handleGetReflections, handleDeleteReflection, handleClearAll, sendMessage]
+    [handleSaveReflection, handleGetReflections, handleDeleteReflection, handleClearAll, handleSessionStarted, handleGetLastSession, sendMessage]
   );
 
   const onShouldStartLoadWithRequest = useCallback((request: any) => {
-    // Allow all http/https URLs to load within WebView
     const url = request.url.toLowerCase();
-    return url.startsWith('http://') || url.startsWith('https://');
-  }, []);
+    
+    // Handle app:// protocol for navigating to native screens
+    // Example: app://session/start?id=session1&title=Session%201
+    if (url.startsWith('app://')) {
+      const appUrl = request.url.replace('app://', '');
+      console.log('[MCHT] App navigation requested:', appUrl);
+      
+      // Parse URL - for now just log, we can implement navigation later
+      // This allows WordPress to trigger navigation to app screens
+      sendMessage({
+        type: 'ERROR',
+        payload: { 
+          code: 'APP_NAV', 
+          message: `App navigation not yet implemented: ${appUrl}` 
+        },
+      });
+      return false;
+    }
+    
+    // Handle special URL schemes (tel:, mailto:, sms:, etc.) with native apps
+    if (url.startsWith('tel:') || 
+        url.startsWith('mailto:') || 
+        url.startsWith('sms:') || 
+        url.startsWith('whatsapp:') ||
+        url.startsWith('maps:') ||
+        url.startsWith('geo:')) {
+      Linking.openURL(request.url).catch(err => 
+        console.error('[MCHT] Failed to open URL:', err)
+      );
+      return false; // Don't load in WebView
+    }
+    
+    // Check if URL is from allowed domains (stay in WebView)
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      try {
+        const urlObj = new URL(request.url);
+        const hostname = urlObj.hostname.replace('www.', '');
+        
+        // Check if this domain is allowed to load in WebView
+        const isAllowedDomain = ALLOWED_DOMAINS.some(domain => 
+          hostname === domain || hostname.endsWith('.' + domain)
+        );
+        
+        if (isAllowedDomain) {
+          // Load in WebView
+          return true;
+        } else {
+          // External link - open in browser
+          console.log('[MCHT] Opening external URL in browser:', request.url);
+          Linking.openURL(request.url).catch(err => 
+            console.error('[MCHT] Failed to open external URL:', err)
+          );
+          return false;
+        }
+      } catch (err) {
+        console.error('[MCHT] Error parsing URL:', err);
+        return true; // Default to WebView on error
+      }
+    }
+    
+    // Allow other URLs to load in WebView
+    return true;
+  }, [sendMessage]);
 
   return (
     <View style={styles.container}>
       <WebView
         ref={webViewRef}
-        source={{ uri: WEB_APP_URL }}
+        source={{ uri: initialUrl }}
         onMessage={onMessage}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+        injectedJavaScript={injectedJavaScript}
         originWhitelist={['*']}
         javaScriptEnabled
         domStorageEnabled
         setSupportMultipleWindows={false}
         allowsBackForwardNavigationGestures
+        {...(Platform.OS === 'android' && {
+          allowFileAccess: true,
+          allowFileAccessFromFileURLs: true,
+          allowUniversalAccessFromFileURLs: true,
+          mixedContentMode: 'always',
+        })}
         renderLoading={() => (
           <View style={styles.loading}>
             <ActivityIndicator size="large" color="#0a7ea4" />

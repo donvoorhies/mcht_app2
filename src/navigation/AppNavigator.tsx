@@ -11,7 +11,7 @@ import { onboardingStore } from '../stores/onboardingStore';
 export type RootStackParamList = {
   Start: undefined;
   Onboarding: undefined;
-  WebView: undefined;
+  WebView: { initialUrl?: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -26,7 +26,7 @@ export default function AppNavigator() {
         const hasSeenOnboarding = await onboardingStore.getHasSeenOnboarding();
         if (!mounted) return;
         
-        // If onboarding is done, skip directly to WebView
+        // If onboarding is done, go directly to WebView
         setInitialRoute(hasSeenOnboarding ? 'WebView' : 'Start');
       } catch (error) {
         console.error('Error checking onboarding status:', error);

@@ -1,5 +1,25 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
+# MCHT App
+
+MCHT (Mindfulness & Clinical Hypnosis Training) er en React Native app der viser WordPress indhold via WebView med native funktionalitet.
+
+## Features
+
+- 🔄 **Session Tracking** - WordPress kan gemme og hente seneste session via bridge
+- 💾 **Lokal Storage** - Gem refleksioner og session data offline
+- 📱 **Native Links** - Support for `tel:`, `mailto:`, `sms:` osv.
+- 🎨 **Onboarding** - Introduktion til app'ens funktioner
+- 🌐 **WordPress Integration** - Fuld kontrol over UI og indhold i WordPress
+
+## Dokumentation
+
+- [WEBVIEW_BRIDGE.md](./WEBVIEW_BRIDGE.md) - Refleksions bridge dokumentation
+- [WORDPRESS_SESSION_TRACKING.md](./WORDPRESS_SESSION_TRACKING.md) - Session tracking integration guide
+- [SESSION_TRACKING_IMPLEMENTATION.md](./SESSION_TRACKING_IMPLEMENTATION.md) - Implementation oversigt
+- [WORDPRESS_TEKSTER.md](./WORDPRESS_TEKSTER.md) - Alle tekster fra original app
+- [QUICKSTART.md](./QUICKSTART.md) - Hurtig opsætning guide
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MCHT WordPress Integration - Eksempler</title>
+</head>
+<body>
+    <h1>MCHT App Integration - Eksempler</h1>
+    
+    <h2>1. Navigation til App-Sessioner</h2>
+    
+    <h3>Med HTML Links:</h3>
+    <pre>
+&lt;!-- Foreslåede sessioner --&gt;
+&lt;a href="app://session/start?id=session-1&amp;title=Basistræning"&gt;
+    Start Basistræning
+&lt;/a&gt;
+
+&lt;!-- Igangværende session --&gt;
+&lt;a href="app://session/resume?id=session-current"&gt;
+    Fortsæt igangværende session
+&lt;/a&gt;
+
+&lt;!-- Se refleksioner --&gt;
+&lt;a href="app://reflections?sessionId=session-1"&gt;
+    Se dine refleksioner
+&lt;/a&gt;
+    </pre>
+
+    <h3>Med JavaScript:</h3>
+    <pre>
+&lt;button onclick="startSession()"&gt;Start Session&lt;/button&gt;
+
+&lt;script&gt;
+function startSession() {
+    // Navigation via MCHT API
+    window.MCHT.navigateToSession('session-1', 'Basistræning');
+}
+
+function resumeSession() {
+    // Hent sidst aktive session
+    window.MCHT.getLastSession();
+}
+
+// Lyt efter sidste session
+window.addEventListener('message', function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'LAST_SESSION' && data.payload) {
+        console.log('Sidste session:', data.payload);
+        // Vis "Fortsæt"-knap hvis der er en aktiv session
+        if (data.payload.id) {
+            document.getElementById('resume-btn').style.display = 'block';
+        }
+    }
+});
+&lt;/script&gt;
+    </pre>
+
+    <h2>2. Refleksioner</h2>
+    
+    <h3>Gem refleksion:</h3>
+    <pre>
+&lt;textarea id="reflection-text" placeholder="Skriv din refleksion..."&gt;&lt;/textarea&gt;
+&lt;button onclick="saveReflection()"&gt;Gem Refleksion&lt;/button&gt;
+
+&lt;script&gt;
+function saveReflection() {
+    const text = document.getElementById('reflection-text').value;
+    
+    window.MCHT.saveReflection({
+        id: 'reflection-' + Date.now(),
+        sessionId: 'session-1', // Aktuel session ID
+        text: text,
+        createdAt: new Date().toISOString()
+    });
+}
+
+// Lyt efter bekræftelse
+window.addEventListener('message', function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'SAVE_OK') {
+        alert('Refleksion gemt!');
+        document.getElementById('reflection-text').value = '';
+    }
+});
+&lt;/script&gt;
+    </pre>
+
+    <h3>Hent og vis refleksioner:</h3>
+    <pre>
+&lt;button onclick="loadReflections()"&gt;Vis mine refleksioner&lt;/button&gt;
+&lt;div id="reflections-list"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+function loadReflections() {
+    // Hent alle refleksioner for denne session
+    window.MCHT.getReflections('session-1');
+}
+
+window.addEventListener('message', function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'REFLECTIONS') {
+        displayReflections(data.payload.items);
+    }
+});
+
+function displayReflections(reflections) {
+    const list = document.getElementById('reflections-list');
+    list.innerHTML = '';
+    
+    reflections.forEach(function(r) {
+        const div = document.createElement('div');
+        const date = new Date(r.createdAt).toLocaleDateString('da-DK');
+        div.innerHTML = '&lt;strong&gt;' + date + ':&lt;/strong&gt; ' + r.text;
+        list.appendChild(div);
+    });
+}
+&lt;/script&gt;
+    </pre>
+
+    <h2>3. Session Tracking</h2>
+    
+    <pre>
+&lt;script&gt;
+// Når brugeren starter en session på WordPress
+function startSessionTracking(sessionId, sessionTitle) {
+    window.MCHT.startSession(sessionId, sessionTitle, window.location.href);
+}
+
+// På session-side
+startSessionTracking('session-1', 'Basistræning i Hypnose');
+&lt;/script&gt;
+    </pre>
+
+    <h2>4. Lokale Assets (Billeder)</h2>
+    
+    <p>Når du har mappet assets i <code>webViewInjection.ts</code>, vil WordPress automatisk bruge lokale versioner:</p>
+    
+    <pre>
+&lt;!-- Dette billede vil automatisk redirectes til lokal version --&gt;
+&lt;img src="https://www.corehypnose.dk/wp-content/uploads/2020/04/Logo-Jpg1080x1080-1024x1024.jpg" 
+     alt="MCHT Logo"&gt;
+    </pre>
+
+    <h2>5. Komplet Eksempel: Session Side</h2>
+    
+    <pre>
+&lt;!-- WordPress session template --&gt;
+&lt;div class="session-page"&gt;
+    &lt;h1&gt;Basistræning i Hypnose&lt;/h1&gt;
+    
+    &lt;!-- Session content --&gt;
+    &lt;div class="session-content"&gt;
+        &lt;p&gt;Velkommen til basistræning...&lt;/p&gt;
+    &lt;/div&gt;
+    
+    &lt;!-- Refleksions-sektion --&gt;
+    &lt;div class="reflection-section"&gt;
+        &lt;h2&gt;Dine refleksioner&lt;/h2&gt;
+        &lt;div id="reflections"&gt;&lt;/div&gt;
+        
+        &lt;h3&gt;Tilføj ny refleksion&lt;/h3&gt;
+        &lt;textarea id="new-reflection" rows="5"&gt;&lt;/textarea&gt;
+        &lt;button onclick="saveNewReflection()"&gt;Gem&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const SESSION_ID = 'session-basistræning';
+const SESSION_TITLE = 'Basistræning i Hypnose';
+
+// Track session start
+window.MCHT.startSession(SESSION_ID, SESSION_TITLE, window.location.href);
+
+// Load existing reflections
+window.MCHT.getReflections(SESSION_ID);
+
+function saveNewReflection() {
+    const text = document.getElementById('new-reflection').value;
+    if (!text.trim()) return;
+    
+    window.MCHT.saveReflection({
+        id: 'reflection-' + Date.now(),
+        sessionId: SESSION_ID,
+        text: text,
+        createdAt: new Date().toISOString()
+    });
+}
+
+// Handle messages from app
+window.addEventListener('message', function(event) {
+    const data = JSON.parse(event.data);
+    
+    switch(data.type) {
+        case 'REFLECTIONS':
+            displayReflections(data.payload.items);
+            break;
+        case 'SAVE_OK':
+            document.getElementById('new-reflection').value = '';
+            // Reload reflections
+            window.MCHT.getReflections(SESSION_ID);
+            break;
+    }
+});
+
+function displayReflections(items) {
+    const container = document.getElementById('reflections');
+    container.innerHTML = items.map(function(r) {
+        const date = new Date(r.createdAt).toLocaleDateString('da-DK');
+        return '&lt;div class="reflection"&gt;&lt;small&gt;' + date + 
+               '&lt;/small&gt;&lt;p&gt;' + r.text + '&lt;/p&gt;&lt;/div&gt;';
+    }).join('');
+}
+&lt;/script&gt;
+    </pre>
+
+</body>
+</html>
