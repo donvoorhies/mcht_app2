@@ -80,8 +80,21 @@ Brug denne template til: https://mcht.voorhies.dk/refleksioner/
     try {
       const data = JSON.parse(event.data);
       
-      if (data.type === 'REFLECTIONS_DATA') {
-        allReflections = data.payload || [];
+      if (data.type === 'REFLECTIONS') {
+        allReflections = data.payload.items || [];
+        displayReflections(allReflections);
+      }
+    } catch (e) {
+      console.error('Error parsing message:', e);
+    }
+  });
+  
+  document.addEventListener('message', function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      
+      if (data.type === 'REFLECTIONS') {
+        allReflections = data.payload.items || [];
         displayReflections(allReflections);
       }
     } catch (e) {

@@ -1,0 +1,116 @@
+<!-- Kopier denne COMPLETE fil til WordPress Custom HTML -->
+
+<div style="max-width:800px;margin:0 auto;padding:20px;font-family:-apple-system,sans-serif">
+
+<h1 style="color:#333;margin-bottom:30px">Session 1: Velegnethed og Identitet</h1>
+
+<div style="margin-bottom:30px">
+  <p style="font-weight:bold;margin-bottom:10px">Hvordan føler du efter denne session?</p>
+  <div id="q1">
+    <div data-group="q1" data-value="Meget positivt" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Meget positivt</div>
+    <div data-group="q1" data-value="Positivt" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Positivt</div>
+    <div data-group="q1" data-value="Neutralt" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Neutralt</div>
+    <div data-group="q1" data-value="Lidt negativt" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Lidt negativt</div>
+  </div>
+</div>
+
+<div style="margin-bottom:30px">
+  <p style="font-weight:bold;margin-bottom:10px">Var indholdet relevant for dig?</p>
+  <div id="q2">
+    <div data-group="q2" data-value="Meget relevant" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Meget relevant</div>
+    <div data-group="q2" data-value="Relevant" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Relevant</div>
+    <div data-group="q2" data-value="Neutralt" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Neutralt</div>
+    <div data-group="q2" data-value="Lidt irrelevant" style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:white;color:#333;text-align:center">Lidt irrelevant</div>
+  </div>
+</div>
+
+<div style="margin-bottom:30px">
+  <p style="font-weight:bold;margin-bottom:10px">Dine refleksioner (valgfrit):</p>
+  <textarea id="txt" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;min-height:120px;box-sizing:border-box"></textarea>
+</div>
+
+<button id="saveBtn" style="width:100%;padding:16px;background:#28a745;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer">💾 Gem Refleksion</button>
+
+<div id="msg" style="display:none;margin-top:15px;padding:12px;border-radius:6px;text-align:center;font-weight:bold"></div>
+
+</div>
+
+<script>
+(function(){
+  var answers={};
+  
+  var allBtns=document.querySelectorAll('[data-group]');
+  for(var i=0;i<allBtns.length;i++){
+    allBtns[i].onclick=function(){
+      var group=this.getAttribute('data-group');
+      var value=this.getAttribute('data-value');
+      
+      var siblings=document.querySelectorAll('[data-group="'+group+'"]');
+      for(var j=0;j<siblings.length;j++){
+        siblings[j].style.background='white';
+        siblings[j].style.borderColor='#ddd';
+        siblings[j].style.color='#333';
+      }
+      
+      this.style.background='#007AFF';
+      this.style.borderColor='#007AFF';
+      this.style.color='white';
+      
+      answers[group]=value;
+    };
+    
+    allBtns[i].onmouseover=function(){
+      if(this.style.background!=='rgb(0, 122, 255)'){
+        this.style.borderColor='#007AFF';
+      }
+    };
+    
+    allBtns[i].onmouseout=function(){
+      if(this.style.background!=='rgb(0, 122, 255)'){
+        this.style.borderColor='#ddd';
+      }
+    };
+  }
+  
+  document.getElementById('saveBtn').onclick=function(){
+    var data={
+      id:'session-1-'+Date.now(),
+      sessionId:'session-1-velegnethed',
+      text:JSON.stringify({
+        sessionTitle:'Velegnethed og Identitet',
+        q1:answers.q1||'Ikke besvaret',
+        q2:answers.q2||'Ikke besvaret',
+        reflection:document.getElementById('txt').value
+      }),
+      createdAt:new Date().toISOString()
+    };
+    
+    var msg=document.getElementById('msg');
+    
+    if(window.ReactNativeWebView){
+      try{
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type:'SAVE_REFLECTION',
+          payload:data
+        }));
+        msg.style.display='block';
+        msg.style.background='#d4edda';
+        msg.style.color='#155724';
+        msg.innerHTML='✅ Refleksion gemt i app!';
+        setTimeout(function(){msg.style.display='none'},3000);
+      }catch(e){
+        msg.style.display='block';
+        msg.style.background='#f8d7da';
+        msg.style.color='#721c24';
+        msg.innerHTML='❌ Fejl: '+e.message;
+      }
+    }else{
+      msg.style.display='block';
+      msg.style.background='#fff3cd';
+      msg.style.color='#856404';
+      msg.innerHTML='⚠️ Test mode - åbn i app for at gemme';
+      setTimeout(function(){msg.style.display='none'},3000);
+    }
+  };
+})();
+</script>

@@ -1,0 +1,20 @@
+<h1>Session 1: Velegnethed og Identitet</h1>
+
+<p><b>Hvordan føler du efter denne session?</b></p>
+<div id="q1">
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q1 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a1='Meget positivt'">Meget positivt</div>
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q1 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a1='Positivt'">Positivt</div>
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q1 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a1='Neutralt'">Neutralt</div>
+</div>
+
+<p><b>Var indholdet relevant?</b></p>
+<div id="q2">
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q2 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a2='Meget relevant'">Meget relevant</div>
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q2 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a2='Relevant'">Relevant</div>
+<div style="padding:15px;margin:8px 0;border:2px solid #ddd;border-radius:8px;cursor:pointer;background:#fff" onclick="document.querySelectorAll('#q2 div').forEach(function(x){x.style.background='#fff';x.style.borderColor='#ddd';x.style.color='#333'}); this.style.background='#007AFF';this.style.borderColor='#007AFF';this.style.color='#fff'; window.a2='Neutralt'">Neutralt</div>
+</div>
+
+<p><b>Dine tanker (valgfrit):</b></p>
+<textarea id="txt" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;min-height:100px"></textarea>
+
+<button onclick="var d={id:'s1-'+Date.now(),sessionId:'session-1',text:JSON.stringify({q1:window.a1||'',q2:window.a2||'',txt:document.getElementById('txt').value}),createdAt:new Date().toISOString()}; window.ReactNativeWebView.postMessage(JSON.stringify({type:'SAVE_REFLECTION',payload:d})); alert('Gemt!');" style="width:100%;padding:16px;margin-top:20px;background:#28a745;color:#fff;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer">💾 GEM REFLEKSION</button>

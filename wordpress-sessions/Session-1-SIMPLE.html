@@ -73,56 +73,55 @@ Tag dig tid til at tænke over hvert spørgsmål. Der er ingen rigtige eller for
 </div>
 
 <script>
-var selectedAnswers = {};
-
 function selectOption(element, groupId) {
-  // Gem svaret
-  selectedAnswers[groupId] = element.getAttribute('data-value');
-  
   // Fjern selected fra alle i gruppen
   var group = document.getElementById(groupId);
   var buttons = group.querySelectorAll('div[data-value]');
   buttons.forEach(function(btn) {
-    btn.style.cssText = 'display: block !important; width: 100% !important; padding: 12px 20px !important; margin: 5px 0 !important; background: white !important; color: #333 !important; border: 1px solid #ddd !important; border-radius: 8px !important; text-align: center !important; cursor: pointer !important; box-sizing: border-box !important; min-height: 45px !important;';
+    btn.style.background = 'white';
+    btn.style.color = '#333';
+    btn.style.borderColor = '#ddd';
   });
   
   // Tilføj selected til denne
-  element.style.cssText = 'display: block !important; width: 100% !important; padding: 12px 20px !important; margin: 5px 0 !important; background: #007AFF !important; color: white !important; border: 1px solid #007AFF !important; border-radius: 8px !important; text-align: center !important; cursor: pointer !important; box-sizing: border-box !important; min-height: 45px !important;';
+  element.style.background = '#007AFF';
+  element.style.color = 'white';
+  element.style.borderColor = '#007AFF';
 }
 
 function saveReflection() {
-  var answers = {
-    q1: selectedAnswers.q1 || 'Ikke besvaret',
-    q2: selectedAnswers.q2 || 'Ikke besvaret'
-  };
+  var answers = {};
+  
+  // Hent svar fra spørgsmål 1
+  var q1Selected = document.querySelector('#q1 div[style*="background: rgb(0, 122, 255)"]');
+  if (q1Selected) {
+    answers.q1 = q1Selected.getAttribute('data-value');
+  }
+  
+  // Hent svar fra spørgsmål 2
+  var q2Selected = document.querySelector('#q2 div[style*="background: rgb(0, 122, 255)"]');
+  if (q2Selected) {
+    answers.q2 = q2Selected.getAttribute('data-value');
+  }
   
   // Hent fri tekst
   var reflectionText = document.getElementById('reflection-text').value;
   
   var reflection = {
-    id: 'session-1-' + Date.now(),
-    sessionId: 'session-1-velegnethed',
-    text: JSON.stringify({
-      sessionTitle: 'Velegnethed og Identitet',
-      answers: answers,
-      reflection: reflectionText
-    }),
+    sessionId: '1',
+    sessionTitle: 'Velegnethed og Identitet',
+    answers: answers,
+    text: reflectionText,
     createdAt: new Date().toISOString()
   };
   
-  // Send to React Native app via WebView bridge
-  if (window.ReactNativeWebView) {
-    window.ReactNativeWebView.postMessage(JSON.stringify({
-      type: 'SAVE_REFLECTION',
-      payload: reflection
-    }));
-  }
+  console.log('Reflection saved:', reflection);
   
   var feedback = document.getElementById('save-feedback');
   feedback.style.display = 'block';
   feedback.style.background = '#d4edda';
   feedback.style.color = '#155724';
-  feedback.innerHTML = '✅ Refleksion gemt i app!';
+  feedback.innerHTML = '✅ Refleksion gemt!';
   
   setTimeout(function() {
     feedback.style.display = 'none';

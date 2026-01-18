@@ -33,8 +33,17 @@ Selvbevidsthed handler om at observere sig selv uden dom. Prøv at bevare en nys
   <div id="reflection-section" class="reflection-section">
     <h3>Refleksionsspørgsmål:</h3>
     
-    <!-- Questions will be dynamically added here by JavaScript -->
-    <div id="reflection-questions-container"></div>
+    <!-- Question 1 -->
+    <div class="reflection-question">
+      <label>Hvor let var det at observere dine egne tanker?</label>
+      <div class="reflection-button-group" id="reflection-q1">
+        <div class="reflection-option-btn" data-question-id="r1" data-value="Meget let">Meget let</div>
+        <div class="reflection-option-btn" data-question-id="r1" data-value="Let">Let</div>
+        <div class="reflection-option-btn" data-question-id="r1" data-value="Moderat">Moderat</div>
+        <div class="reflection-option-btn" data-question-id="r1" data-value="Svært">Svært</div>
+        <div class="reflection-option-btn" data-question-id="r1" data-value="Meget svært">Meget svært</div>
+      </div>
+    </div>
 
     <!-- Free text reflection -->
     <div class="reflection-question">
@@ -86,41 +95,16 @@ Selvbevidsthed handler om at observere sig selv uden dom. Prøv at bevare en nys
   };
 
   // CORE FUNCTIONS
-  function populateReflectionQuestions() {
-    const container = document.getElementById('reflection-questions-container');
-    container.innerHTML = '';
-    
-    SESSION_CONFIG.reflectionQuestions.forEach((q, index) => {
-      const questionDiv = document.createElement('div');
-      questionDiv.className = 'reflection-question';
-      
-      const label = document.createElement('label');
-      label.textContent = q.question;
-      questionDiv.appendChild(label);
-      
-      const buttonGroup = document.createElement('div');
-      buttonGroup.className = 'reflection-button-group';
-      buttonGroup.id = `reflection-q${index + 1}`;
-      
-      q.options.forEach(option => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'reflection-option-btn';
-        button.textContent = option;
-        button.setAttribute('data-question-id', q.id);
-        button.setAttribute('data-value', option);
-        
-        button.onclick = function() {
-          const siblings = buttonGroup.querySelectorAll('.reflection-option-btn');
-          siblings.forEach(btn => btn.classList.remove('selected'));
-          this.classList.add('selected');
-        };
-        
-        buttonGroup.appendChild(button);
-      });
-      
-      questionDiv.appendChild(buttonGroup);
-      container.appendChild(questionDiv);
+  function initializeReflectionButtons() {
+    // Add click handlers to all reflection option buttons
+    const allButtons = document.querySelectorAll('.reflection-option-btn');
+    allButtons.forEach(button => {
+      button.onclick = function() {
+        const buttonGroup = this.closest('.reflection-button-group');
+        const siblings = buttonGroup.querySelectorAll('.reflection-option-btn');
+        siblings.forEach(btn => btn.classList.remove('selected'));
+        this.classList.add('selected');
+      };
     });
   }
 
@@ -194,7 +178,7 @@ Selvbevidsthed handler om at observere sig selv uden dom. Prøv at bevare en nys
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    populateReflectionQuestions();
+    initializeReflectionButtons();
   });
 </script>
 
@@ -330,29 +314,34 @@ Selvbevidsthed handler om at observere sig selv uden dom. Prøv at bevare en nys
   }
 
   .reflection-option-btn {
-    padding: 12px 20px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    background: white;
-    color: #333;
+    display: block !important;
+    box-sizing: border-box !important;
+    padding: 12px 20px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    background: white !important;
+    color: #333 !important;
     font-size: 0.95em;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
     flex: 1 1 auto;
     min-width: 120px;
+    min-height: 45px !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .reflection-option-btn:hover {
-    border-color: #007AFF;
-    background: #f0f8ff;
+    border-color: #007AFF !important;
+    background: #f0f8ff !important;
     transform: translateY(-1px);
   }
 
   .reflection-option-btn.selected {
-    background: #007AFF;
-    color: white;
-    border-color: #007AFF;
+    background: #007AFF !important;
+    color: white !important;
+    border-color: #007AFF !important;
     box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
   }
 
@@ -424,8 +413,9 @@ Selvbevidsthed handler om at observere sig selv uden dom. Prøv at bevare en nys
     }
 
     .reflection-option-btn {
-      width: 100%;
-      min-width: unset;
+      width: 100% !important;
+      min-width: unset !important;
+      min-height: 45px !important;
     }
   }
 </style>
