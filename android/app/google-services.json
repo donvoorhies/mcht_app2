@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "279719713452",
+    "project_id": "mcht-prototype",
+    "storage_bucket": "mcht-prototype.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:279719713452:android:9ee8e0e172e2c5d1645d09",
+        "android_client_info": {
+          "package_name": "com.mchtapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7YziFBBiIqk1JLu2M-x_PAB0IGkWpOFk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
