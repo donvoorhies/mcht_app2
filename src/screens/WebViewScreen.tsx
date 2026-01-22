@@ -1,18 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRoute } from '@react-navigation/native';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { ALLOWED_DOMAINS, BASE_URL, WEB_APP_URL } from '../config';
+import { t } from '../i18n';
 import type { IncomingMessage, OutgoingMessage, Reflection, SessionInfo } from '../types/webview';
 import { getInjectedJavaScript } from '../utils/webViewInjection';
 
 const REFLECTIONS_KEY = 'mcht_reflections_v1';
 const LAST_SESSION_KEY = 'mcht_last_session';
 
+type NavigationProp = NativeStackNavigationProp<any>;
+
 export default function WebViewScreen() {
   const route = useRoute<any>();
+  const navigation = useNavigation<NavigationProp>();
   const webViewRef = useRef<WebView>(null);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currentUrl, setCurrentUrl] = useState<string>('');
   
   // Get initial URL from navigation params or use default
   const initialUrl = route.params?.initialUrl 
@@ -145,6 +153,22 @@ export default function WebViewScreen() {
     }
   }, [sendMessage]);
 
+  // Handle OPEN_CARD message from WebView
+  const handleOpenCard = useCallback(
+    (uid: string) => {
+      // Navigate to card endpoint
+      const cardUrl = `${BASE_URL}wp-json/mct/v1/cards/${uid}`;
+      console.log('[MCHT] Opening card:', uid, cardUrl);
+      
+      // Update current URL and reload WebView
+      if (webViewRef.current) {
+        setCurrentUrl(cardUrl);
+        webViewRef.current.injectJavaScript(`window.location.href = '${cardUrl}';`);
+      }
+    },
+    []
+  );
+
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
       try {
@@ -169,6 +193,12 @@ export default function WebViewScreen() {
           case 'GET_LAST_SESSION':
             handleGetLastSession();
             break;
+          case 'OPEN_CARD':
+            // Handle OPEN_CARD message from WebView
+            if (message.payload && message.payload.uid) {
+              handleOpenCard(message.payload.uid);
+            }
+            break;
           default:
             console.warn('Unknown message type:', (message as any).type);
         }
@@ -180,20 +210,57 @@ export default function WebViewScreen() {
         });
       }
     },
-    [handleSaveReflection, handleGetReflections, handleDeleteReflection, handleClearAll, handleSessionStarted, handleGetLastSession, sendMessage]
+    [handleSaveReflection, handleGetReflections, handleDeleteReflection, handleClearAll, handleSessionStarted, handleGetLastSession, handleOpenCard, sendMessage]
   );
+
+  const handleRetry = useCallback(() => {
+    setHasError(false);
+    setErrorMessage(null);
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
+  }, []);
+
+  const handleOpenInBrowser = useCallback(() => {
+    const urlToOpen = currentUrl || initialUrl;
+    Linking.openURL(urlToOpen).catch(err =>
+      console.error('[MCHT] Failed to open URL in browser:', err)
+    );
+  }, [currentUrl, initialUrl]);
+
+  const onError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error('[MCHT] WebView error:', nativeEvent);
+    
+    setHasError(true);
+    
+    // Determine error message based on error code
+    let message: string = t.webview.errorGeneric;
+    if (nativeEvent.description) {
+      const desc = nativeEvent.description.toLowerCase();
+      if (desc.includes('network') || desc.includes('internet') || desc.includes('connection')) {
+        message = t.webview.errorOffline;
+      } else if (desc.includes('timeout')) {
+        message = t.webview.errorTimeout;
+      }
+    }
+    
+    setErrorMessage(message);
+  }, []);
+
+  const onLoadStart = useCallback(() => {
+    setHasError(false);
+    setErrorMessage(null);
+  }, []);
 
   const onShouldStartLoadWithRequest = useCallback((request: any) => {
     const url = request.url.toLowerCase();
     
     // Handle app:// protocol for navigating to native screens
-    // Example: app://session/start?id=session1&title=Session%201
     if (url.startsWith('app://')) {
       const appUrl = request.url.replace('app://', '');
       console.log('[MCHT] App navigation requested:', appUrl);
       
-      // Parse URL - for now just log, we can implement navigation later
-      // This allows WordPress to trigger navigation to app screens
       sendMessage({
         type: 'ERROR',
         payload: { 
@@ -214,25 +281,23 @@ export default function WebViewScreen() {
       Linking.openURL(request.url).catch(err => 
         console.error('[MCHT] Failed to open URL:', err)
       );
-      return false; // Don't load in WebView
+      return false;
     }
     
     // Check if URL is from allowed domains (stay in WebView)
     if (url.startsWith('http://') || url.startsWith('https://')) {
       try {
         const urlObj = new URL(request.url);
-        const hostname = urlObj.hostname.replace('www.', '');
+        const hostname = (urlObj as any).hostname?.replace('www.', '') || '';
         
-        // Check if this domain is allowed to load in WebView
         const isAllowedDomain = ALLOWED_DOMAINS.some(domain => 
           hostname === domain || hostname.endsWith('.' + domain)
         );
         
         if (isAllowedDomain) {
-          // Load in WebView
+          setCurrentUrl(request.url);
           return true;
         } else {
-          // External link - open in browser
           console.log('[MCHT] Opening external URL in browser:', request.url);
           Linking.openURL(request.url).catch(err => 
             console.error('[MCHT] Failed to open external URL:', err)
@@ -241,13 +306,32 @@ export default function WebViewScreen() {
         }
       } catch (err) {
         console.error('[MCHT] Error parsing URL:', err);
-        return true; // Default to WebView on error
+        return true;
       }
     }
     
-    // Allow other URLs to load in WebView
     return true;
   }, [sendMessage]);
+
+  // Show error view if WebView failed to load
+  if (hasError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>{t.webview.errorTitle}</Text>
+        <Text style={styles.errorMessage}>
+          {errorMessage || t.webview.errorMessage}
+        </Text>
+        <View style={styles.errorActions}>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryButtonText}>{t.common.retry}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.browserButton} onPress={handleOpenInBrowser}>
+            <Text style={styles.browserButtonText}>{t.common.openInBrowser}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -256,6 +340,8 @@ export default function WebViewScreen() {
         source={{ uri: initialUrl }}
         onMessage={onMessage}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+        onError={onError}
+        onLoadStart={onLoadStart}
         injectedJavaScript={injectedJavaScript}
         originWhitelist={['*']}
         javaScriptEnabled
@@ -271,6 +357,7 @@ export default function WebViewScreen() {
         renderLoading={() => (
           <View style={styles.loading}>
             <ActivityIndicator size="large" color="#0a7ea4" />
+            <Text style={styles.loadingText}>{t.webview.loading}</Text>
           </View>
         )}
         startInLoadingState
@@ -292,5 +379,57 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  errorActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  retryButton: {
+    backgroundColor: '#0a7ea4',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  browserButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  browserButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

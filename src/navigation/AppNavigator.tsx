@@ -3,14 +3,28 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppPageScreen from '../screens/AppPageScreen';
+import CardScreen from '../screens/CardScreen';
+import HubDetailScreen from '../screens/HubDetailScreen';
+import HubScreen from '../screens/HubScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import ProcessCardScreen from '../screens/ProcessCardScreen';
+import SessionsScreen from '../screens/SessionsScreen';
 import StartScreen from '../screens/StartScreen';
+import StaticPageScreen from '../screens/StaticPageScreen';
 import WebViewScreen from '../screens/WebViewScreen';
 import { onboardingStore } from '../stores/onboardingStore';
 
 export type RootStackParamList = {
   Start: undefined;
   Onboarding: undefined;
+  Hub: undefined;
+  HubDetail: { hubId: string };
+  ProcessCard: { processId: string; uid?: string };
+  AppPage: { pageId: string };
+  StaticPage: { slug: string };
+  Sessions: { hubId: string } | undefined;
+  Card: { uid: string };
   WebView: { initialUrl?: string } | undefined;
 };
 
@@ -26,12 +40,12 @@ export default function AppNavigator() {
         const hasSeenOnboarding = await onboardingStore.getHasSeenOnboarding();
         if (!mounted) return;
         
-        // If onboarding is done, go directly to WebView
-        setInitialRoute(hasSeenOnboarding ? 'WebView' : 'Start');
+        // If onboarding not done, show Onboarding, otherwise go to Hub
+        setInitialRoute(hasSeenOnboarding ? 'Hub' : 'Onboarding');
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         if (!mounted) return;
-        setInitialRoute('Start');
+        setInitialRoute('Onboarding');
       }
     };
     
@@ -64,6 +78,13 @@ export default function AppNavigator() {
         >
           <Stack.Screen name="Start" component={StartScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Hub" component={HubScreen} />
+          <Stack.Screen name="HubDetail" component={HubDetailScreen} />
+          <Stack.Screen name="ProcessCard" component={ProcessCardScreen} />
+          <Stack.Screen name="AppPage" component={AppPageScreen} />
+          <Stack.Screen name="StaticPage" component={StaticPageScreen} />
+          <Stack.Screen name="Sessions" component={SessionsScreen} />
+          <Stack.Screen name="Card" component={CardScreen} />
           <Stack.Screen name="WebView" component={WebViewScreen} />
         </Stack.Navigator>
       </NavigationContainer>

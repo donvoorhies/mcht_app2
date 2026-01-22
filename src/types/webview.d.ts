@@ -88,7 +88,8 @@ export type IncomingMessage =
   | { type: 'DELETE_REFLECTION'; payload: { id: string } }
   | { type: 'CLEAR_ALL'; payload?: never }
   | { type: 'SESSION_STARTED'; payload: { id: string; title: string; url?: string } }
-  | { type: 'GET_LAST_SESSION'; payload?: never };
+  | { type: 'GET_LAST_SESSION'; payload?: never }
+  | { type: 'OPEN_CARD'; payload: { uid: string } };
 
 /**
  * Message types sent from App to WordPress

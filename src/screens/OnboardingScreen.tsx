@@ -22,29 +22,29 @@ const slides = [
   {
     key: 'welcome',
     title: 'Velkommen til MCHT',
-    description: 'En enkel vej til daglig refleksion og træning — på dine betingelser.',
-    image: require('../assets/images/CoreHyponoselogo.png'),
-    imageAccessibilityLabel: 'Velkomstillustration',
+    description: 'Metakognitiv terapi — en vej til at mindske bekymring, grubling og mental uro.',
+    image: require('../assets/images/MCHT-logo.png'),
+    imageAccessibilityLabel: 'MCHT logo',
   },
   {
     key: 'programs',
-    title: 'Personlige programmer',
-    description: 'Følg strukturerede programmer og korte sessioner, skræddersyet til din hverdag.',
-    image: require('../assets/images/CoreHyponoselogo.png'),
+    title: 'Strukturerede forløb',
+    description: 'Følg trin-for-trin gennem MCT-forløbet: START, TRÆN, STOP CAS, TEST og VEDLIGEHOLDELSE.',
+    image: require('../assets/images/MCHT-logo.png'),
     imageAccessibilityLabel: 'Programillustration',
   },
   {
     key: 'reflect',
-    title: 'Reflekter og lær',
-    description: 'Skriv korte refleksioner, gem fremskridt, og se mønstre over tid.',
-    image: require('../assets/images/CoreHyponoselogo.png'),
-    imageAccessibilityLabel: 'Refleksionsillustration',
+    title: 'Træn din opmærksomhed',
+    description: 'Lær ATT og DM-øvelser der giver dig kontrol over dine mentale reaktioner.',
+    image: require('../assets/images/MCHT-logo.png'),
+    imageAccessibilityLabel: 'Træningsillustration',
   },
   {
     key: 'privacy',
     title: 'Dit privatliv først',
-    description: 'Vi gemmer kun det, du aktivt skriver. Ingen deling uden dit samtykke.',
-    image: require('../assets/images/CoreHyponoselogo.png'),
+    description: 'Dine data gemmes sikkert. Ingen deling uden dit samtykke. Se INFO-siden for detaljer.',
+    image: require('../assets/images/MCHT-logo.png'),
     imageAccessibilityLabel: 'Privatlivillustration',
   },
 ];
@@ -69,12 +69,12 @@ export default function OnboardingScreen() {
     }
 
     await onboardingStore.setHasSeenOnboarding(true);
-    navigation.reset({ index: 0, routes: [{ name: 'WebView' }] });
+    navigation.reset({ index: 0, routes: [{ name: 'Hub' }] });
   }, [index, navigation, fadeAnim]);
 
   const onSkip = useCallback(async () => {
     await onboardingStore.setHasSeenOnboarding(true);
-    navigation.reset({ index: 0, routes: [{ name: 'WebView' }] });
+    navigation.reset({ index: 0, routes: [{ name: 'Hub' }] });
   }, [navigation]);
 
   const renderItem = ({ item }: { item: typeof slides[number] }) => (
