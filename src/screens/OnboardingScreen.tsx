@@ -1,3 +1,29 @@
+/**
+ * OnboardingScreen - First-time user introduction to MCHT app
+ * 
+ * FUNCTIONALITY:
+ *   - Shows 4 slides explaining the app's purpose and features
+ *   - User can swipe through slides or tap "Næste" button
+ *   - "Spring over" button allows skipping to main app
+ *   - After completion, sets flag in AsyncStorage and navigates to Hub
+ * 
+ * SLIDES:
+ *   1. Welcome - Introduction to MCT therapy
+ *   2. Programs - Explains the 5-hub structure (START, TRÆN, STOP CAS, TEST, VEDLIGEHOLDELSE)
+ *   3. Reflect - Describes ATT and DM training exercises
+ *   4. Privacy - Privacy policy and data handling info
+ * 
+ * PERSISTENCE:
+ *   - Flag stored as '@mcht_app:onboarding_done' in AsyncStorage
+ *   - Once set to true, user won't see onboarding again
+ *   - Can be reset by clearing app data or AsyncStorage
+ * 
+ * ACCESSIBILITY:
+ *   - Announces slide content for screen readers
+ *   - Smooth fade transitions between slides
+ *   - Touch-friendly buttons with proper sizing
+ */
+
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {

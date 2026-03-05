@@ -1,6 +1,27 @@
 /**
- * ContactBox - Therapist contact information
- * Display contact details for Lars Nissen Corell
+ * ContactBox - Therapist contact information component
+ * 
+ * FUNCTIONALITY:
+ *   - Displays therapist's photo, name, title, and contact details
+ *   - All contact fields are clickable:
+ *     • Phone number → Opens phone dialer
+ *     • Email → Opens email client
+ *     • Website → Opens browser
+ *   - Used on INFO page for easy therapist access
+ * 
+ * STYLING:
+ *   - Brand color: #256f86 (teal) background
+ *   - White text for contrast
+ *   - Circular photo with white border
+ *   - Shadow effects for depth
+ *   - Responsive layout
+ * 
+ * CONTACT INFO:
+ *   - Lars Nissen Corell (Metakognitiv terapeut & Hypnotisør)
+ *   - Phone: 27 20 46 71
+ *   - Email: kontakt@corehypnose.dk
+ *   - Address: Valby Tingsted 7, 2500 Valby
+ *   - Website: www.corehypnose.dk
  */
 
 import React from 'react';

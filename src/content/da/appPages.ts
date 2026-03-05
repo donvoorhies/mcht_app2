@@ -1,6 +1,41 @@
 /**
- * App Pages Content - Danish
- * Static app pages (overview, info) with their textual content
+ * App Pages Content - Special static pages (overview, info)
+ * 
+ * PURPOSE:
+ *   - Content for non-therapeutic app pages
+ *   - overview: Progress tracking page (handled by OverviewScreen)
+ *   - info: Disclaimer, privacy, contact information
+ * 
+ * DIFFERENCES FROM OTHER CONTENT:
+ *   - These pages don't link to WordPress
+ *   - Completely static content
+ *   - overview is unique: content here defines structure,
+ *     but OverviewScreen generates actual progress display
+ * 
+ * APP PAGES:
+ *   1. overview:
+ *      - Shows user's progress through program
+ *      - Calculates completion percentages
+ *      - Provides recommendations for next steps
+ *      - Uses progressStore to read visited hubs/cards
+ *   
+ *   2. info:
+ *      - Critical disclaimer and liability text
+ *      - Privacy information
+ *      - Crisis resources (Livslinjen, 112)
+ *      - Contact information (via ContactBox component)
+ * 
+ * LEGAL CONSIDERATIONS:
+ *   - info page contains important legal disclaimers
+ *   - Must be prominently accessible (yellow warning card on home)
+ *   - Contains crisis hotline numbers
+ *   - TextWithLinks component makes phones/URLs clickable
+ *   - 112 specifically NOT made clickable (prevent accidental calls)
+ * 
+ * CONTENT UPDATES:
+ *   - Changes require app rebuild
+ *   - Disclaimer text should be reviewed by legal counsel
+ *   - Crisis numbers should be verified for target country
  */
 
 import type { ContentPage } from './hubs';

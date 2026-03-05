@@ -1,5 +1,33 @@
 /**
- * TextWithLinks - Render text with clickable links and phone numbers
+ * TextWithLinks - Intelligent text component that auto-detects and makes links clickable
+ * 
+ * FUNCTIONALITY:
+ *   - Parses text for URLs and phone numbers
+ *   - Renders them as clickable elements
+ *   - URLs open in device browser
+ *   - Phone numbers open device dialer
+ * 
+ * SPECIAL HANDLING:
+ *   - 112 (emergency number) is NOT made clickable
+ *   - This prevents accidental emergency calls
+ *   - Pattern specifically excludes "112" from phone detection
+ * 
+ * SUPPORTED FORMATS:
+ *   - URLs: www.example.com, https://example.com
+ *   - Phones: "70 201 201" style (Danish format with spaces)
+ *   - Preserves surrounding text and formatting
+ * 
+ * USAGE:
+ *   - Used in disclaimer text on INFO page
+ *   - Allows mentioning Livslinjen (70 201 201) and website as clickable
+ *   - While keeping "112" as plain text
+ * 
+ * ALGORITHM:
+ *   1. Regex extracts all URLs and phone numbers
+ *   2. Excludes "112" specifically
+ *   3. Sorts matches by position in text
+ *   4. Splits text into parts (plain text, links, phones)
+ *   5. Renders each part with appropriate styling/behavior
  */
 
 import React from 'react';

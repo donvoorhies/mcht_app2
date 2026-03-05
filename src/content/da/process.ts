@@ -1,6 +1,48 @@
 /**
- * Process Card Pages Content - Danish
- * All process card pages with their textual content and WordPress UIDs
+ * Process Card Pages Content - Danish intro text + WordPress UIDs
+ * 
+ * PURPOSE:
+ *   - Each process card has Danish intro text (static)
+ *   - Each has a UID linking to WordPress therapeutic content (dynamic)
+ *   - This allows: Static app structure + Dynamic therapeutic updates
+ * 
+ * TWO-LAYER CONTENT MODEL:
+ *   1. STATIC (this file):
+ *      - Title, paragraphs, bullets
+ *      - Intro/overview text shown first
+ *      - Requires app rebuild to change
+ *   
+ *   2. DYNAMIC (WordPress):
+ *      - Detailed therapeutic instructions
+ *      - Audio files, videos, exercises
+ *      - Can be updated without app rebuild
+ *      - Fetched via /wp-json/mct/v1/cards/{uid}
+ * 
+ * UID RESOLUTION:
+ *   - uid field can be:
+ *     • Real UID: 'CAS_INTRO' (fetches from WordPress)
+ *     • TODO: 'TODO-UID-xxx' (no WordPress content yet)
+ *   - contentManifestMapper.ts handles UID lookup from manifest
+ *   - This allows WordPress admin to create cards without hardcoding UIDs
+ * 
+ * PROCESS CARD IDS:
+ *   - Must match nextLinks.target in hubs.ts
+ *   - Used for navigation and progress tracking
+ *   - Examples: 'start_cas', 'train_att_basic', 'stop_worry'
+ * 
+ * WORDPRESS INTEGRATION:
+ *   - Therapist creates card in WordPress admin
+ *   - Card gets automatic UID from WordPress
+ *   - Manifest API returns list of all card UIDs
+ *   - contentManifestMapper maps processId → slug → UID
+ *   - ProcessCardScreen fetches card by UID
+ * 
+ * CONTENT UPDATE WORKFLOW:
+ *   1. Therapist logs into WordPress
+ *   2. Creates/edits MCT card
+ *   3. Adds title, content, YouTube videos, etc.
+ *   4. Publishes card
+ *   5. App fetches fresh content automatically (no rebuild needed)
  */
 
 import type { ContentPage } from './hubs';

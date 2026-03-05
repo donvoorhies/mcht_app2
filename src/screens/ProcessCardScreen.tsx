@@ -1,7 +1,43 @@
 /**
  * ProcessCardScreen - Display process card content + WordPress card (WebView)
- * Shows Danish intro text from content layer, then loads therapeutic content from WordPress
- * Uses manifest to get dynamic UIDs (no hardcoded UIDs needed)
+ * 
+ * ARCHITECTURE:
+ *   This is the most complex screen in the app. It combines:
+ *   1. Static Danish intro text (from content layer)
+ *   2. Dynamic WordPress therapeutic content (via REST API)
+ *   3. Native YouTube video player (extracted from WordPress HTML)
+ * 
+ * DATA FLOW:
+ *   1. Receives processId from navigation params
+ *   2. Loads static content from src/content/da/process.ts
+ *   3. Loads WordPress manifest to get dynamic UID
+ *   4. Fetches WordPress card content via /wp-json/mct/v1/cards/{uid}
+ *   5. Extracts YouTube URLs from WordPress HTML
+ *   6. Renders YouTube videos natively (react-native-youtube-iframe)
+ *   7. Renders remaining content in WebView (text, images, etc.)
+ * 
+ * WORDPRESS INTEGRATION:
+ *   - UID Resolution: contentManifestMapper maps processId → slug → UID
+ *   - No hardcoded UIDs: Therapist can add/edit cards in WordPress admin
+ *   - Manifest cached in AsyncStorage for offline support
+ *   - Content fetched fresh each time (ensures latest version)
+ * 
+ * YOUTUBE HANDLING:
+ *   - Problem: WebView can't play YouTube iframes (Error 153)
+ *   - Solution: Extract iframe URLs, render with react-native-youtube-iframe
+ *   - Regex extracts all YouTube URLs from HTML
+ *   - Iframes removed from HTML before passing to WebView
+ *   - Native player shows above WebView content
+ * 
+ * PROGRESS TRACKING:
+ *   - Automatically marks process card as visited when loaded
+ *   - Stored via progressStore in AsyncStorage
+ *   - Used by OverviewScreen to calculate completion percentage
+ * 
+ * ERROR HANDLING:
+ *   - If manifest fails: Falls back to paramUid or shows intro only
+ *   - If WordPress fetch fails: Shows error message with retry button
+ *   - If content missing: Shows "Indhold mangler" message
  */
 
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -117,7 +153,22 @@ export default function ProcessCardScreen() {
     }
   };
 
-  // Extract YouTube URLs from HTML
+  /**
+   * YOUTUBE URL EXTRACTION
+   * 
+   * This function extracts all YouTube iframe src URLs from WordPress HTML.
+   * It's necessary because:
+   *   - WordPress editor allows YouTube embedding via iframe
+   *   - WebView can't play YouTube iframes (shows Error 153)
+   *   - We need to extract URLs and render them with native player
+   * 
+   * Matches:
+   *   - youtube.com iframes
+   *   - youtube-nocookie.com iframes (privacy-enhanced mode)
+   *   - All common YouTube embed formats
+   * 
+   * Returns array of full iframe src URLs.
+   */
   const extractYouTubeUrls = (html: string): string[] => {
     const urls: string[] = [];
     const iframePattern = /src=["']([^"']*(?:youtube\.com|youtube-nocookie\.com)[^"']*)["']/gi;
@@ -130,7 +181,15 @@ export default function ProcessCardScreen() {
     return urls;
   };
 
-  // Remove YouTube iframes from HTML
+  /**
+   * REMOVE YOUTUBE IFRAMES FROM HTML
+   * 
+   * This function removes all YouTube iframe elements from WordPress HTML.
+   * This prevents duplicate videos (native player + iframe) and WebView errors.
+   * 
+   * The cleaned HTML is then passed to WebView for rendering text/images.
+   * YouTube videos are rendered separately above the WebView.
+   */
   const removeYouTubeIframes = (html: string): string => {
     return html.replace(/<iframe[^>]*(?:youtube\.com|youtube-nocookie\.com)[^>]*>.*?<\/iframe>/gi, '');
   };

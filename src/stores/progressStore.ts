@@ -1,6 +1,38 @@
 /**
- * Progress Store - Track user's progress through MCT program
- * Stores visited hubs, process cards, and completion status
+ * Progress Store - Track user's progress through the MCT program
+ * 
+ * ARCHITECTURE:
+ *   - Uses AsyncStorage for persistence (survives app restarts)
+ *   - Stores all progress as JSON string
+ *   - Provides simple async API for tracking visits/completion
+ * 
+ * DATA MODEL:
+ *   - visitedHubs: Array of hub IDs user has visited
+ *   - visitedProcessCards: Array of process card IDs user has viewed
+ *   - completedHubs: Array of hub IDs user has marked complete
+ *   - lastVisited: ID of most recently visited item
+ *   - lastVisitedAt: Timestamp of last visit
+ * 
+ * AUTOMATIC TRACKING:
+ *   - HubDetailScreen automatically calls markHubVisited() on load
+ *   - ProcessCardScreen automatically calls markProcessCardVisited() on load
+ *   - No manual tracking needed
+ * 
+ * USED BY:
+ *   - OverviewScreen: Calculates completion percentages
+ *   - Shows which hubs/cards user has seen
+ *   - Provides recommendations for next steps
+ *   - Displays overall progress through program
+ * 
+ * PERSISTENCE KEY:
+ *   - '@mcht_app:progress' in AsyncStorage
+ *   - Can be cleared to reset progress
+ *   - Survives app updates (unless app data cleared)
+ * 
+ * ERROR HANDLING:
+ *   - All methods have try/catch blocks
+ *   - Errors logged but don't crash app
+ *   - Returns default empty data on read errors
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

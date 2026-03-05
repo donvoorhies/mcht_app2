@@ -1,3 +1,29 @@
+/**
+ * AppNavigator - Main navigation container for the MCHT app
+ * 
+ * ARCHITECTURE OVERVIEW:
+ * This app uses React Navigation with a native stack navigator.
+ * The navigation flow is:
+ *   1. Check onboarding status from AsyncStorage
+ *   2. If not seen → Show OnboardingScreen (4 slides)
+ *   3. If seen → Navigate to Hub (main menu)
+ *   4. From Hub → HubDetail (hub content) → ProcessCard (therapeutic content)
+ *   5. AppPage handles special pages (overview, info)
+ * 
+ * KEY SCREENS:
+ *   - OnboardingScreen: First-time user introduction (4 slides)
+ *   - HubScreen: Main menu with 5 hubs + 2 app pages
+ *   - HubDetailScreen: Shows hub content with links to process cards
+ *   - ProcessCardScreen: Danish intro + WordPress therapeutic content
+ *   - AppPageScreen: Routes to OverviewScreen (progress) or info page
+ *   - OverviewScreen: Progress tracking with completion bars
+ * 
+ * NAVIGATION STATE:
+ *   - Initial route determined by onboarding status (AsyncStorage)
+ *   - Progress tracked via progressStore (visited hubs/cards)
+ *   - All navigation is stack-based (can go back)
+ */
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +41,17 @@ import StaticPageScreen from '../screens/StaticPageScreen';
 import WebViewScreen from '../screens/WebViewScreen';
 import { onboardingStore } from '../stores/onboardingStore';
 
+/**
+ * ROUTE PARAMETERS:
+ * All navigation routes and their parameters are defined here.
+ * TypeScript ensures type-safe navigation throughout the app.
+ * 
+ * Key routes:
+ *   - Hub: Main menu (no parameters)
+ *   - HubDetail: Shows specific hub content (requires hubId)
+ *   - ProcessCard: Shows process card (requires processId, optional uid)
+ *   - AppPage: Special pages like overview/info (requires pageId)
+ */
 export type RootStackParamList = {
   Start: undefined;
   Onboarding: undefined;
@@ -33,6 +70,21 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
 
+  /**
+   * Check onboarding status on app launch
+   * 
+   * This effect runs once when the app starts.
+   * It checks AsyncStorage for the onboarding flag.
+   * 
+   * Flow:
+   *   1. Read '@mcht_app:onboarding_done' from AsyncStorage
+   *   2. If true → Go to Hub (main menu)
+   *   3. If false/missing → Show Onboarding slides
+   *   4. On error → Default to Onboarding (safe fallback)
+   * 
+   * The mounted flag prevents state updates if component unmounts
+   * during the async operation.
+   */
   useEffect(() => {
     let mounted = true;
     const checkOnboarding = async () => {

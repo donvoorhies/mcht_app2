@@ -1,6 +1,37 @@
 /**
- * Hub Pages Content - Danish
- * All hub pages with their textual content, links, and navigation targets
+ * Hub Pages Content - Danish language content for all hub pages
+ * 
+ * PURPOSE:
+ *   - Stores all static Danish text for hub pages
+ *   - No WordPress dependency for this content
+ *   - Changes here require app rebuild (by design)
+ * 
+ * STRUCTURE:
+ *   Each hub has:
+ *   - title: Display name shown in UI
+ *   - paragraphs: Array of text paragraphs
+ *   - bullets: Optional bullet point list
+ *   - paragraphsAfterBullets: Optional text after bullets
+ *   - nextLinks: Navigation buttons to process cards
+ * 
+ * HUBS IN MCT PROGRAM:
+ *   1. start: Introduction to CAS concept and MCT approach
+ *   2. train: ATT and DM training exercises
+ *      - train_att: Attention Training Technique
+ *      - train_dm: Detached Mindfulness
+ *   3. stopcas: Techniques to interrupt CAS patterns
+ *   4. test: Experiments to challenge metacognitive beliefs
+ *   5. maintenance: Relapse prevention and generalization
+ * 
+ * NAVIGATION:
+ *   - nextLinks.target must match processId in process.ts
+ *   - HubDetailScreen uses these to render navigation buttons
+ *   - Clicking navigates to ProcessCardScreen with that processId
+ * 
+ * CONTENT UPDATES:
+ *   - To update hub text: Edit this file and rebuild app
+ *   - To update process card content: Edit WordPress (no rebuild)
+ *   - This separation allows static structure + dynamic therapeutic content
  */
 
 export type ContentPage = {

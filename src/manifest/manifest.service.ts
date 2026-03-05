@@ -1,7 +1,51 @@
 /**
- * Manifest service with cache-first strategy
- * Fetches from /wp-json/mct/v1/manifest
- * Uses AsyncStorage for caching
+ * Manifest Service - Fetches and caches WordPress card manifest
+ * 
+ * PURPOSE:
+ *   - Provides list of all WordPress cards (UIDs, titles, slugs)
+ *   - Enables dynamic UID lookup without hardcoding
+ *   - Supports offline-first architecture with caching
+ * 
+ * ARCHITECTURE:
+ *   1. Fetch manifest from WordPress REST API
+ *   2. Validate structure (ensure required fields present)
+ *   3. Cache in AsyncStorage for offline support
+ *   4. Return cached version if fetch fails
+ *   5. Development fallback if all else fails
+ * 
+ * CACHING STRATEGY:
+ *   - Cache key: 'mcht_manifest_v1' in AsyncStorage
+ *   - Fresh fetch attempted on every getManifest() call
+ *   - If fetch fails, return cached version
+ *   - If both fail, return development fallback
+ *   - Cache never expires (always better than nothing)
+ * 
+ * WORDPRESS ENDPOINT:
+ *   - URL: {BASE_URL}/wp-json/mct/v1/manifest
+ *   - Returns: { version, minAppVersion, cardsIndex }
+ *   - cardsIndex: Array of { uid, title, modified, status, slug? }
+ * 
+ * VERSION CHECKING:
+ *   - Manifest includes minAppVersion field
+ *   - If app version < minAppVersion, mark as incompatible
+ *   - App can show "update required" message
+ *   - Currently not enforced (placeholder logic)
+ * 
+ * ERROR HANDLING:
+ *   - Network errors: Fall back to cache
+ *   - Timeout (10s): Fall back to cache
+ *   - Invalid JSON: Fall back to cache
+ *   - Cache corrupted: Clear cache, use dev fallback
+ * 
+ * USED BY:
+ *   - contentManifestMapper.ts: Maps processId to UID
+ *   - ProcessCardScreen: Gets UID for WordPress fetch
+ *   - useManifest hook: React hook wrapper
+ * 
+ * DEVELOPMENT MODE:
+ *   - USE_DEV_FALLBACK = true always uses fallback
+ *   - Useful for testing without WordPress connection
+ *   - developmentManifest.ts contains sample data
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

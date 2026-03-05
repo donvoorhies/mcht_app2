@@ -1,5 +1,30 @@
 /**
  * HubDetailScreen - Display hub content with links to process cards
+ * 
+ * FUNCTIONALITY:
+ *   - Shows title, description paragraphs, and bullet points for a hub
+ *   - Lists process cards as navigation buttons at bottom
+ *   - Tracks visit to this hub via progressStore
+ *   - Each hub represents a phase in the MCT therapy program
+ * 
+ * DATA FLOW:
+ *   1. Receives hubId from navigation params
+ *   2. Loads hub content from content layer (src/content/da/hubs.ts)
+ *   3. Displays static Danish text (paragraphs, bullets)
+ *   4. Shows nextLinks as clickable buttons
+ *   5. Clicking a button navigates to ProcessCardScreen
+ * 
+ * HUB STRUCTURE:
+ *   - start: Introduction to MCT and CAS concept
+ *   - train: ATT and DM training exercises
+ *   - stopcas: Techniques to stop CAS patterns
+ *   - test: Experiments to test beliefs
+ *   - maintenance: Long-term strategies and relapse prevention
+ * 
+ * PROGRESS TRACKING:
+ *   - Automatically marks hub as visited when screen loads
+ *   - Progress stored in AsyncStorage via progressStore
+ *   - Used by OverviewScreen to show completion status
  */
 
 import { useNavigation, useRoute } from '@react-navigation/native';
