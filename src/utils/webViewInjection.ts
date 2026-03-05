@@ -58,11 +58,11 @@ export const getInjectedJavaScript = (platform: 'ios' | 'android'): string => {
     'mand2-225x300.png': '${mand2DataUrl}',
     'kvinde1-224x300.png': '${kvinde1DataUrl}',
     'kvinde2-226x300.png': '${kvinde2DataUrl}',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png': '${chatgptDataUrl}',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand1-225x300.png': '${mand1DataUrl}',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand2-225x300.png': '${mand2DataUrl}',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde1-224x300.png': '${kvinde1DataUrl}',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde2-226x300.png': '${kvinde2DataUrl}',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png': '${chatgptDataUrl}',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand1-225x300.png': '${mand1DataUrl}',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand2-225x300.png': '${mand2DataUrl}',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde1-224x300.png': '${kvinde1DataUrl}',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde2-226x300.png': '${kvinde2DataUrl}',
   };
   
   // Asset mapping: WordPress URL -> Local asset identifier
@@ -73,16 +73,16 @@ export const getInjectedJavaScript = (platform: 'ios' | 'android'): string => {
     'MCHT-logo.png': 'MCHT-logo.png',
     // ChatGPT image (both short name and full URL)
     'chatgpt-image.png': 'chatgpt-image.png',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png': 'https://mcht.voorhies.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png': 'https://www.corehypnose.dk/wp-content/uploads/2026/01/ChatGPT-Image-Jan-9-2026-01_06_04-PM-200x300.png',
     // Person images
     'mand1-225x300.png': 'mand1-225x300.png',
     'mand2-225x300.png': 'mand2-225x300.png',
     'kvinde1-224x300.png': 'kvinde1-224x300.png',
     'kvinde2-226x300.png': 'kvinde2-226x300.png',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand1-225x300.png': 'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand1-225x300.png',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand2-225x300.png': 'https://mcht.voorhies.dk/wp-content/uploads/2026/01/mand2-225x300.png',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde1-224x300.png': 'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde1-224x300.png',
-    'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde2-226x300.png': 'https://mcht.voorhies.dk/wp-content/uploads/2026/01/kvinde2-226x300.png',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand1-225x300.png': 'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand1-225x300.png',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand2-225x300.png': 'https://www.corehypnose.dk/wp-content/uploads/2026/01/mand2-225x300.png',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde1-224x300.png': 'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde1-224x300.png',
+    'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde2-226x300.png': 'https://www.corehypnose.dk/wp-content/uploads/2026/01/kvinde2-226x300.png',
   };
 
   // Get local asset URL (returns data: URL with base64)

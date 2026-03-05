@@ -101,7 +101,7 @@ Status: Publiceret
 ## Fejlsøgning
 
 ### Kortet vises ikke i appen
-1. **Tjek manifestet**: `https://mcht.voorhies.dk/wp-json/mct/v1/manifest`
+1. **Tjek manifestet**: `https://www.corehypnose.dk/wp-json/mct/v1/manifest`
    - Er kortet i `cardsIndex`?
    - Har det korrekt `slug` felt?
 
@@ -121,9 +121,9 @@ Status: Publiceret
 
 ## Tekniske detaljer
 
-**Manifest endpoint**: `https://mcht.voorhies.dk/wp-json/mct/v1/manifest`
+**Manifest endpoint**: `https://www.corehypnose.dk/wp-json/mct/v1/manifest`
 
-**Kort endpoint**: `https://mcht.voorhies.dk/wp-json/mct/v1/cards/{UID}`
+**Kort endpoint**: `https://www.corehypnose.dk/wp-json/mct/v1/cards/{UID}`
 
 **Kode-reference**: 
 - Slug-mapping: `src/content/contentManifestMapper.ts`

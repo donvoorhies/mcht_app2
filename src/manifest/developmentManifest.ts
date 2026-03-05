@@ -8,7 +8,7 @@ import type { Manifest } from './manifest.types';
 export const developmentManifest: Manifest = {
   schemaVersion: '1.0',
   appConfig: {
-    baseWebUrl: 'https://mcht.voorhies.dk',
+    baseWebUrl: 'https://www.corehypnose.dk',
   },
   content: {
     revision: new Date().toISOString(),

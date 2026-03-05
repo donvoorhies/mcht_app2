@@ -26,7 +26,7 @@
  *   - This prevents phishing/malicious redirects
  */
 
-export const BASE_URL = 'https://mcht.voorhies.dk/';
+export const BASE_URL = 'https://www.corehypnose.dk/';
 export const APP_PATH = '/';
 
 /**
@@ -39,7 +39,7 @@ export const WEB_APP_URL = `${BASE_URL}${APP_PATH}`;
  * All other domains will open in external browser
  */
 export const ALLOWED_DOMAINS = [
-  'mcht.voorhies.dk',
   'www.corehypnose.dk',
+  'corehypnose.dk',
   // Add more allowed domains here
 ];
